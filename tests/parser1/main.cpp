@@ -42,6 +42,9 @@ public:
         fread(buffer, 256, 1, fp);
         fclose(fp);
 
+
+
+        // parsing
         gason::JsonAllocator    allocator;
         gason::JsonValue        root;
         // buffer will be over-written by jsonParse
@@ -50,6 +53,9 @@ public:
             return false;
         }
 
+
+
+        // finding / reading values
         if ( (int)root.child("array").at(1).toNumber() != 2 ) {
             puts("reading array element failed!");
         }
@@ -61,6 +67,15 @@ public:
         }
         printf("string is: %s\n", root("string").toString());
 
+
+        // iteration
+        gason::JsonValue childObject = root.child("object");
+        gason::JsonIterator it;
+        for ( it = gason::begin(childObject);    it != gason::end(childObject);    it++) {
+            printf("%s = %s\n",
+                   it->key, it->value.toString()
+                   );
+        }
 
         return true;
     }

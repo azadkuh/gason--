@@ -58,15 +58,21 @@ char buffer[257] = {0};
 gason::JsonAllocator    allocator;
 gason::JsonValue        root;
 
-// buffer will be over-written by jsonParse
+////////////////////////////
+// parse
+////////////////////////////
+// -> buffer will be over-written by jsonParse() <-
 if ( gason::jsonParse(buffer, root, allocator) != gason::JSON_PARSE_OK ) {
     puts("parsing failed!");
     return false;
 }
 
+////////////////////////////
+// read / find / checks
+////////////////////////////
 // reads value:          root.array[1] = 1
 int array1 = (int) root.child("array").at(1).toNumber();
-array1     = (int) root("array")[1].toNumber();  // short form
+int array2 = (int) root("array")[2].toNumber();  // short form
 
 // checks type:          root.number = 123 is a number type (tag)
 bool bnumber  = root("number") == gason::JSON_TAG_NUMBER;
@@ -74,14 +80,26 @@ bool bnumber  = root("number") == gason::JSON_TAG_NUMBER;
 // prints child object: root.object.c = d
 puts( root("object")("c").toString() ); // prints d, short form
 puts( root.child("object")
-          .child("c").toString()
-    ); // prints d
+          .child("e").toString()
+    ); // prints f
 ```
 > All **values** will become **invalid** when **allocator** be **destroyed**.
 
 ### Iteration
+to iterate over `object` children (elements) simply:
 ```cpp
+gason::JsonValue childObject = root.child("object");
 
+for ( gason::JsonIterator it =  gason::begin(childObject);
+      it != gason::end(childObject);    it++) {
+    printf("%s = %s\n",
+           it->key, it->value.toString()
+           );
+    // prints:
+    // a = b
+    // c = d
+    // e =f
+}
 ```
 
 
