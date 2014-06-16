@@ -71,7 +71,7 @@ public:
         // iteration
         gason::JsonValue childObject = root.child("object");
         gason::JsonIterator it;
-        for ( it = gason::begin(childObject);    it != gason::end(childObject);    it++) {
+        for ( it = gason::begin(childObject);    it.isValid();    it++) {
             printf("%s = %s\n",
                    it->key, it->value.toString()
                    );

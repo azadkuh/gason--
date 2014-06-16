@@ -121,8 +121,8 @@ insertAfter(JsonNode *tail, JsonNode *node) {
 static inline JsonValue
 listToValue(JsonTag tag, JsonNode *tail) {
     if (tail) {
-        auto head = tail->next;
-        tail->next = nullptr;
+        JsonNode* head = tail->next;
+        tail->next     = nullptr;
         return JsonValue(tag, head);
     }
     return JsonValue(tag, nullptr);

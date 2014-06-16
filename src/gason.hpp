@@ -24,6 +24,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace gason {
 ///////////////////////////////////////////////////////////////////////////////
+#ifndef nullptr
+#   define nullptr      NULL
+#endif
+///////////////////////////////////////////////////////////////////////////////
 /** tag (type) of each JSon element. */
 enum JsonTag {
     JSON_TAG_NUMBER = 0,        ///< double (floating point) value
@@ -125,11 +129,17 @@ struct JsonNode {
 struct JsonIterator {
     JsonNode*   p;
 
+    explicit JsonIterator(JsonNode* n = nullptr) : p(n) {
+    }
+
     void        operator++() {
         p = p->next;
     }
     void        operator++(int) {
         p = p->next;
+    }
+    bool       isValid()const {
+        return p != nullptr;
     }
 
     bool        operator==(const char* key) const {
@@ -148,10 +158,10 @@ struct JsonIterator {
 };
 
 inline JsonIterator begin(JsonValue o) {
-    return JsonIterator{o.toNode()};
+    return JsonIterator(o.toNode());
 }
 inline JsonIterator end(JsonValue) {
-    return JsonIterator{nullptr};
+    return JsonIterator(nullptr);
 }
 ///////////////////////////////////////////////////////////////////////////////
 
