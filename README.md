@@ -136,6 +136,10 @@ doc.startObject()
     .endObject();
 
 // now the buffer contains the proper json string.
+
+if ( !doc.isBufferAdequate() ) {
+    puts("warning: the buffer is small and the output json is not valid.");
+}
 ```
 
 ## License
