@@ -17,6 +17,7 @@ please read gason documents to see the full list of features and other notes.
 - [License](#license)
 
 ## Notes
+
 * gason(gason++) is efficient and fast and it does not consume any extra memory for parsed values (objects, arrays, ...)
 
 * gason(gason++) is a **destructive** parser:
@@ -26,8 +27,10 @@ please read gason documents to see the full list of features and other notes.
 
 
 ## Installation
-1. Download latest version and just add `gason.hpp` / `gason.cpp` and `jsonbuilder.hpp` from **src** folder to your project tree. other `*.pro` and source files are just for testinig purpose.
-2. C++11 is optional and gason++ is also compilable on older toolchains. 
+
+* Download latest version and just add [gason.hpp](./src/gason.hpp) / [gason.cpp](./src/gason.cpp) and [jsonbuilder.hpp](./src/jsonbuilder.hpp) from [src](./src) folder into your project tree. other `*.pro` and source files are just for testinig purpose.
+
+* c++11 is optional and gason++ is also compilable on older toolchains. 
 
 
 ## Usage
@@ -105,6 +108,9 @@ for ( gason::JsonIterator it =  gason::begin(childObject);
 ```
 
 ### Building
+
+> JSonBuilder just makes **compact** form of JSon strings suitable for storage or network comminucations. (the output is not indented.)
+
 to build the above json:
 ```cpp
 char buffer[257] = {0};
