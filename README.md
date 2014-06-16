@@ -26,8 +26,8 @@ please read gason documents to see the full list of features and other notes.
 
 
 ## Installation
-1. Download latest version and just add `gason.hpp` / `gason.cpp` and `jsonbuilder.hpp` from **src** folder to your project tree. other `*.pro` and source files are just for testin purpose.
-2. Compile with C++11 support (`-std=c++11` flag for gcc/clang). next version will be compilable without c++11.
+1. Download latest version and just add `gason.hpp` / `gason.cpp` and `jsonbuilder.hpp` from **src** folder to your project tree. other `*.pro` and source files are just for testinig purpose.
+2. C++11 is optional and gason++ is also compilable on older toolchains. 
 
 
 ## Usage
@@ -93,7 +93,7 @@ to iterate over `object` children (elements) simply:
 gason::JsonValue childObject = root.child("object");
 
 for ( gason::JsonIterator it =  gason::begin(childObject);
-      it != gason::end(childObject);    it++) {
+      it.isValid();    it++) {
     printf("%s = %s\n",
            it->key, it->value.toString()
            );
