@@ -1,6 +1,7 @@
 # gason++
 
 gason++ is a light tweak for [gason](https://github.com/vivkin/gason) parser to make its usage even simpler for end-users.
+There is also a simple JSon builder tool.
 
 gason is an **efficient** and fantastic JSon parser in plain C++ with minimum dependency by [vivkin](https://github.com/vivkin).
 
@@ -12,6 +13,7 @@ please read gason documents to see the full list of features and other notes.
 - [Usage](#usage)
     - [Parsing](#parsing)
     - [Iteration](#iteration)
+    - [Building](#building)
 - [License](#license)
 
 ## Notes
@@ -20,11 +22,11 @@ please read gason documents to see the full list of features and other notes.
 * gason(gason++) is a **destructive** parser:
 > your **source buffer** will be **modified**! and this buffer is the only place where the values do exist.
 
-* adding a simple and efficient JSon builder is on the roadmap.
+* there is a simple and efficient JSon builder which is not present on original gason.
 
 
 ## Installation
-1. Download latest version and just add `gason.hpp` and `gason.cpp` to your project tree. other `*.pro` and source files are just for testin purpose.
+1. Download latest version and just add `gason.hpp` / `gason.cpp` and `jsonbuilder.hpp` from **src** folder to your project tree. other `*.pro` and source files are just for testin purpose.
 2. Compile with C++11 support (`-std=c++11` flag for gcc/clang). next version will be compilable without c++11.
 
 
@@ -102,6 +104,33 @@ for ( gason::JsonIterator it =  gason::begin(childObject);
 }
 ```
 
+### Building
+to build the above json:
+```cpp
+char buffer[257] = {0};
+gason::JSonBuilder doc(buffer, 256);
+
+doc.startObject()
+        .startArray("array")
+        .addValue(0)
+        .addValue(1)
+        .addValue(2)
+        .endArray()
+
+   .addValue("boolean", true)
+   .addNull("null")
+   .addValue("number", 123)
+   .startObject("object")
+        .addValue("a", "b")
+        .addValue("c", "d")
+        .addValue("e", "f")
+    .endObject()
+
+    .addValue("string", "Hello World")
+    .endObject();
+
+// now the buffer contains the proper json string.
+```
 
 ## License
 Distributed under the MIT license. Copyright (c) 2014, Amir Zamani.
