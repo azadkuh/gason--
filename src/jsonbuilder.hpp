@@ -42,6 +42,11 @@ public:
         iindex = 0;
     }
 
+    /** returns the empty spaces left. return 0 if the buffer is full. */
+    size_t   emptySpaces() const {
+        return ( iindex < ilength ) ? (ilength - 1 - iindex) : 0;
+    }
+
     StringBuilder&  append(const char* string, size_t length=0) {
         if ( length == 0 )
             length = strlen(string);
@@ -108,6 +113,12 @@ public:
     }
 
     using StringBuilder::reset;
+    using StringBuilder::emptySpaces;
+
+    /** checks if the specified buffer is not small and holds the proper result json string. */
+    bool            isBufferAdequate() const {
+        return emptySpaces() > 0;
+    }
 
     /** starts an object by @code { @endcode or @code "name" : { @endcode if name is not empty. */
     JSonBuilder&    startObject(const char* name = 0) {

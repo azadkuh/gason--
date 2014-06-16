@@ -31,8 +31,20 @@ class JSonGason
 public:
     static bool     doTest1() {
         char buffer[257] = {0};
-        gason::JSonBuilder doc(buffer, 256);
+        return build(buffer, 256, "./sample1-w.json");
+    }
 
+    static bool     doTestOverflow() {
+        char buffer[65] = {0};
+        return build(buffer, 64, "./sample1-w-overflow.json");
+    }
+
+protected:
+    static bool     build(char *buffer, size_t capacity,
+                          const char* fileName) {
+        gason::JSonBuilder doc(buffer, capacity);
+
+        // this sample JSon at least requires a buffer with 119 bytes.
         doc.startObject()
                 .startArray("array")
                 .addValue(0)
@@ -47,14 +59,17 @@ public:
                 .addValue("a", "b")
                 .addValue("c", "d")
                 .addValue("e", "f")
-            .endObject()
+           .endObject()
 
-            .addValue("string", "Hello World")
-            .endObject();
+           .addValue("string", "Hello World")
+           .endObject();
+
+        if ( !doc.isBufferAdequate() ) {
+            puts("warning: the buffer is small and the output json is not valid.");
+        }
 
 
-
-        FILE* fp = fopen("./sample1-w.json", "w+t");
+        FILE* fp = fopen(fileName, "w+t");
         if ( fp == 0 ) {
             puts("failed opening sample1-w.json to write");
             return false;
@@ -72,6 +87,7 @@ public:
 int main(int , char **)
 {
     JSonGason::doTest1();
+    JSonGason::doTestOverflow();
 
     return 0;
 }
