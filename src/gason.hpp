@@ -1,3 +1,19 @@
+/**
+ * @file gason.hpp
+ * a simple and fast JSon parser in plain C/C++ with no dependency.
+ *
+ *
+ * @author Ivan Vashchaev
+ * @version 1.0.0
+ * @date 2014-05-08
+ * based on this commit: 9e292d4
+ *
+ * @author amir zamani
+ * @version 2.0.0
+ * @date 2014-05-16
+ *
+ */
+
 #ifndef __GASON_HPP__
 #define __GASON_HPP__
 ///////////////////////////////////////////////////////////////////////////////
