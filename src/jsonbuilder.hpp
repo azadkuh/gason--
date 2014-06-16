@@ -7,6 +7,11 @@
  * @version 1.0.0
  * @date 2014-05-14
  *
+ * @author amir zamani
+ * @version 1.0.1
+ * @date 2014-05-16
+ * new method : addNull and addValue (unnamed)
+ *
  */
 #ifndef _JSONBUILDER_HPP__
 #define _JSONBUILDER_HPP__
@@ -180,7 +185,7 @@ public:
         return *this;
     }
 
-    //
+    // for unnamed elements
     /** writes an unnamed value by @code "value" @endcode. */
     JSonBuilder&    addValue(const char* value) {
         addPossibleComma()  << "\"" << value << "\"";
@@ -210,6 +215,13 @@ public:
         addPossibleComma() << ((state) ? "true":"false");
         return *this;
     }
+
+    /** writes a null value by @code null @endcode. */
+    JSonBuilder&    addNull() {
+        addPossibleComma() << "null";
+        return *this;
+    }
+
 
 #if defined(QBYTEARRAY_H)
     /** writes a value by @code "name" : "value" @endcode. */
