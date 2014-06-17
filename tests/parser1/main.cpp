@@ -147,6 +147,52 @@ public:
 
         return true;
     }
+
+    static bool     doTest3() {
+        FILE* fp = fopen("../sample-jsons/servlet.json", "r+t");
+        if ( fp == 0 ) {
+            puts("servlet.json not found!");
+            return false;
+        }
+
+        // hold json data through the test
+        static const size_t KBufferLength = 4*1024;
+        char buffer[KBufferLength+1] = {0};
+        fread(buffer, KBufferLength, 1, fp);
+        fclose(fp);
+
+
+        // parsing
+        gason::JsonValue        root;
+        gason::JsonAllocator    allocator;
+        gason::JsonParseStatus  status = gason::jsonParse(buffer, root, allocator);
+        // buffer will be over-written by jsonParse
+        if ( status != gason::JSON_PARSE_OK ) {
+            puts("parsing failed!");
+            return false;
+        }
+
+        bool ok = false;
+        gason::JsonValue deepChild = root
+                                     .child("web-app")
+                                     .child ("servlet").at(0)
+                                     .child("init-param")
+                                     .child("maxUrlLength");
+
+        if ( deepChild  &&  deepChild.isNumber() ) {
+            int maxUrlLength = deepChild.toInt();
+            if ( maxUrlLength != 500 ) {
+                printf("maxUrlLength = %d, should be 500!", maxUrlLength);
+            } else {
+                puts("maxUrlLength = 500");
+            }
+        } else {
+            puts("can not find maxUrlLength in the specified path!");
+        }
+
+
+        return true;
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -154,6 +200,7 @@ int main(int , char **)
 {
     JSonGason::doTest1();
     JSonGason::doTest2();
+    JSonGason::doTest3();
 
     return 0;
 }
