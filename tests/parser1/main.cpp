@@ -31,7 +31,7 @@ class JSonGason
 
 public:
     static bool     doTest1() {
-        FILE* fp = fopen("./sample1.json", "r+t");
+        FILE* fp = fopen("../sample-jsons/sample1.json", "r+t");
         if ( fp == 0 ) {
             puts("sample1.json not found!");
             return false;
@@ -81,13 +81,67 @@ public:
         size_t index = 7;
         gason::JsonValue item = root("array")[index];
         if ( !item ) {
-            printf("array[%u] does not exist.\n", index);
+            printf("array[%lu] does not exist.\n", index);
 
         } else if ( !item.isNumber() ) {
-            printf("array[%u] is not a number.\n", index);
+            printf("array[%lu] is not a number.\n", index);
 
         } else {
-            printf("array[%u] = %d\n", index, item.toInt());
+            printf("array[%lu] = %d\n", index, item.toInt());
+        }
+
+
+        return true;
+    }
+
+    static bool     doTest2() {
+        FILE* fp = fopen("../sample-jsons/fathers.json", "r+t");
+        if ( fp == 0 ) {
+            puts("fathers.json not found!");
+            return false;
+        }
+
+        // hold json data through the test
+        static const size_t KBufferLength = 128*1024;
+        char buffer[KBufferLength+1] = {0};
+        fread(buffer, KBufferLength, 1, fp);
+        fclose(fp);
+
+
+        // parsing
+        gason::JsonValue        root;
+        gason::JsonAllocator    allocator;
+        gason::JsonParseStatus  status = gason::jsonParse(buffer, root, allocator);
+        // buffer will be over-written by jsonParse
+        if ( status != gason::JSON_PARSE_OK ) {
+            puts("parsing failed!");
+            return false;
+        }
+
+        bool ok = false;
+        gason::JsonIterator it = gason::begin(root("fathers"));
+        while ( it.isValid() ) {
+            gason::JsonValue father = it->value;
+
+            size_t sonsCount = 0;
+            for ( gason::JsonIterator chit = gason::begin(father("sons")); chit.isValid(); chit++ ) {
+                sonsCount++;
+            }
+            size_t daughtersCount = 0;
+            for ( gason::JsonIterator chit = gason::begin(father("daughters")); chit.isValid(); chit++ ) {
+                daughtersCount++;
+            }
+
+            if ( (sonsCount + daughtersCount) >= 4 ) {
+                int id           = father("id").toInt(&ok);
+                const char* name = father("name").toString(&ok);
+
+                printf("%s (#%d) has %lu children!!\n", name, id,
+                       sonsCount + daughtersCount);
+
+            }
+
+            it++;
         }
 
 
@@ -99,6 +153,7 @@ public:
 int main(int , char **)
 {
     JSonGason::doTest1();
+    JSonGason::doTest2();
 
     return 0;
 }
