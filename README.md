@@ -86,6 +86,7 @@ if ( status != gason::JSON_PARSE_OK ) {
 //        as long as the parsed JSon values are required.
 ```
 
+see [sample:parser](./tests/parser1/main.cpp) for more examples.
 
 ### Child elements
 [TOC](#table-of-contents)
@@ -201,6 +202,8 @@ if ( !doc.isBufferAdequate() ) {
 ```
 
 > JSonBuilder just makes **compact** form of JSon strings suitable for storage or network communications. (the output is not indented.)
+
+see [sample:builder](./tests/builder1/main.cpp) for more examples.
 
 
 ## License
