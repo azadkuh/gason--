@@ -42,6 +42,7 @@ Download latest version and just add [gason.hpp](./src/gason.hpp) / [gason.cpp](
 
 ## Usage
 [TOC](#table-of-contents)
+
 suppose this json:
 ```json
 {
@@ -64,6 +65,7 @@ suppose this json:
 
 ### Parsing
 [TOC](#table-of-contents)
+
 to parse it simply do:
 ```cpp
 // this buffer holds the json content.
@@ -71,7 +73,7 @@ to parse it simply do:
 
 gason::JsonAllocator    allocator;
 gason::JsonValue        root;
-gason::JsonParseStatus  status = gason::jsonParse(buffer, root, allocator);
+gason::JsonParseStatus  status = gason::jsonParse(jsonString, root, allocator);
 
 if ( status != gason::JSON_PARSE_OK ) {
     puts("parsing failed!");
@@ -87,6 +89,7 @@ if ( status != gason::JSON_PARSE_OK ) {
 
 ### Child elements
 [TOC](#table-of-contents)
+
 gason++ introduces an easy API to retrieve the child elements:
 
 ```cpp
@@ -101,6 +104,7 @@ gason::JsonValue objc = root("an_object")("c");         // = d
 
 ### Type checking
 [TOC](#table-of-contents)
+
 to check validity or the type of values:
 ```cpp
 if ( !str ) {
@@ -116,6 +120,7 @@ if ( objc    &&    objc.isString() ) {
 
 ### Conversion
 [TOC](#table-of-contents)
+
 `JsonValue` has some `toXXX(bool *ok = nullptr)` to convert a value into an int, string, ...
 
 if conversion fails, the conversion methods:
@@ -136,6 +141,7 @@ if ( !ok ) {
 
 ### Iteration
 [TOC](#table-of-contents)
+
 to iterate over `object` children (elements) simply:
 ```cpp
 for ( gason::JsonIterator it =  gason::begin(objc); gason::end(objc); it++ ) {
@@ -158,6 +164,7 @@ while ( it.isValid() ) {
 
 ### Building
 [TOC](#table-of-contents)
+
 to build the above json:
 ```cpp
 char buffer[257] = {0};
@@ -196,4 +203,5 @@ if ( !doc.isBufferAdequate() ) {
 
 ## License
 [TOC](#table-of-contents)
+
 Distributed under the MIT license. Copyright (c) 2014, Amir Zamani.
