@@ -65,24 +65,33 @@ struct JsonValue {
         return isDouble() ? JSON_TAG_NUMBER : JsonTag((ival >> JSON_VALUE_TAG_SHIFT) & JSON_VALUE_TAG_MASK);
     }
 
-    // all toXXX() methods do assert().
-    int         toInt() const {
-        return (int) toNumber();
+    // all toXXX() methods do assert() in failure (type-mismatch) if you do not specify ok.
+    int         toInt(bool* ok = nullptr) const {
+        return (int) toNumber(ok);
     }
-    double      toNumber() const {
-        assert(getTag() == JSON_TAG_NUMBER);
+
+    double      toNumber(bool* ok = nullptr) const {
+        if ( !checkType(getTag() == JSON_TAG_NUMBER, ok) )
+            return 0.0;
+
         return fval;
     }
-    bool        toBool() const {
-        assert(getTag() == JSON_TAG_BOOL);
+    bool        toBool(bool* ok = nullptr) const {
+        if ( !checkType(getTag() == JSON_TAG_BOOL, ok) )
+            return false;
+
         return (bool)getPayload();
     }
-    char*       toString() const {
-        assert(getTag() == JSON_TAG_STRING);
+    char*       toString(bool* ok = nullptr) const {
+        if ( !checkType(getTag() == JSON_TAG_STRING, ok) )
+            return nullptr;
+
         return (char *)getPayload();
     }
-    JsonNode*   toNode() const {
-        assert(getTag() == JSON_TAG_ARRAY || getTag() == JSON_TAG_OBJECT);
+    JsonNode*   toNode(bool* ok = nullptr) const {
+        if ( !checkType(getTag() == JSON_TAG_ARRAY || getTag() == JSON_TAG_OBJECT, ok) )
+            return nullptr;
+
         return (JsonNode *)getPayload();
     }
 
@@ -116,6 +125,16 @@ protected:
     uint64_t    getPayload() const {
         assert(!isDouble());
         return ival & JSON_VALUE_PAYLOAD_MASK;
+    }
+
+    bool        checkType(bool isMatched, bool *ok) const {
+        if ( ok == 0 ) {
+            assert(isMatched && "failed to convert a JsonValue because of type difference.");
+            return true;
+        }
+
+        *ok = isMatched;
+        return isMatched;
     }
 
     static const uint64_t JSON_VALUE_PAYLOAD_MASK = 0x00007FFFFFFFFFFFULL;
