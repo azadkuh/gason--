@@ -70,6 +70,12 @@ struct JsonValue {
     bool        isNode() const {
         return getTag() == JSON_TAG_ARRAY ||  getTag() == JSON_TAG_OBJECT;
     }
+    bool        isArray() const {
+        return getTag() == JSON_TAG_ARRAY;
+    }
+    bool        isObject() const {
+        return getTag() == JSON_TAG_OBJECT;
+    }
     bool        isDouble() const {
         return (int64_t)ival <= (int64_t)JSON_VALUE_NAN_MASK;
     }
@@ -77,11 +83,9 @@ struct JsonValue {
         return isDouble() ? JSON_TAG_NUMBER : JsonTag((ival >> JSON_VALUE_TAG_SHIFT) & JSON_VALUE_TAG_MASK);
     }
 
-    // all toXXX() methods do assert() in failure (type-mismatch) if you do not specify ok.
     int         toInt(bool* ok = nullptr) const {
         return (int) toNumber(ok);
     }
-
     double      toNumber(bool* ok = nullptr) const {
         if ( !checkType(isNumber(), ok) )
             return 0.0;

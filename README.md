@@ -142,7 +142,7 @@ if ( !ok ) {
 ### Iteration
 [TOC](#table-of-contents)
 
-to iterate over `object` children (elements) simply:
+to iterate over children (elements) simply:
 ```cpp
 for ( gason::JsonIterator it =  gason::begin(objc); gason::end(objc); it++ ) {
     printf("%s = %s\n", it->key, it->value.toString());
