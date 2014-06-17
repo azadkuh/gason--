@@ -58,6 +58,18 @@ struct JsonValue {
         ival = JSON_VALUE_NAN_MASK | ((uint64_t)tag << JSON_VALUE_TAG_SHIFT) | x;
     }
 
+    bool        isNumber() const {
+        return getTag() == JSON_TAG_NUMBER;
+    }
+    bool        isBoolean() const {
+        return getTag() == JSON_TAG_BOOL;
+    }
+    bool        isString() const {
+        return getTag() == JSON_TAG_STRING;
+    }
+    bool        isNode() const {
+        return getTag() == JSON_TAG_ARRAY ||  getTag() == JSON_TAG_OBJECT;
+    }
     bool        isDouble() const {
         return (int64_t)ival <= (int64_t)JSON_VALUE_NAN_MASK;
     }
@@ -71,25 +83,25 @@ struct JsonValue {
     }
 
     double      toNumber(bool* ok = nullptr) const {
-        if ( !checkType(getTag() == JSON_TAG_NUMBER, ok) )
+        if ( !checkType(isNumber(), ok) )
             return 0.0;
 
         return fval;
     }
     bool        toBool(bool* ok = nullptr) const {
-        if ( !checkType(getTag() == JSON_TAG_BOOL, ok) )
+        if ( !checkType(isBoolean(), ok) )
             return false;
 
         return (bool)getPayload();
     }
     char*       toString(bool* ok = nullptr) const {
-        if ( !checkType(getTag() == JSON_TAG_STRING, ok) )
+        if ( !checkType(isString(), ok) )
             return nullptr;
 
         return (char *)getPayload();
     }
     JsonNode*   toNode(bool* ok = nullptr) const {
-        if ( !checkType(getTag() == JSON_TAG_ARRAY || getTag() == JSON_TAG_OBJECT, ok) )
+        if ( !checkType(isNode(), ok) )
             return nullptr;
 
         return (JsonNode *)getPayload();
