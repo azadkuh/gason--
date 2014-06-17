@@ -144,12 +144,14 @@ if ( !ok ) {
 
 to iterate over children (elements) simply:
 ```cpp
-for ( gason::JsonIterator it =  gason::begin(objc); gason::end(objc); it++ ) {
+gason::JsonValue obj = root("an_object");
+
+for ( gason::JsonIterator it =  gason::begin(obj); gason::end(obj); it++ ) {
     printf("%s = %s\n", it->key, it->value.toString());
 }
 
 // or
-gason::JsonIterator it = gason::begin( objc );
+gason::JsonIterator it = gason::begin( obj );
 while ( it.isValid() ) {
     printf("%s = %s\n", it->key, it->value.toString());
 
