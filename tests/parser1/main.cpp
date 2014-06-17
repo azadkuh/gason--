@@ -47,19 +47,19 @@ public:
         // parsing
         gason::JsonAllocator    allocator;
         gason::JsonValue        root;
+        gason::JsonParseStatus  status = gason::jsonParse(buffer, root, allocator);
         // buffer will be over-written by jsonParse
-        if ( gason::jsonParse(buffer, root, allocator) != gason::JSON_PARSE_OK ) {
+        if ( status != gason::JSON_PARSE_OK ) {
             puts("parsing failed!");
             return false;
         }
 
-
-
         // finding / reading values
-        if ( (int)root.child("array").at(1).toNumber() != 2 ) {
+        bool ok = false;
+        if ( root.child("array").at(5).toInt(&ok) != 2 ) {
             puts("reading array element failed!");
         }
-        if ( root("number") != gason::JSON_TAG_NUMBER ) {
+        if ( !root("number").isNumber() ) {
             puts("number is not a number!");
         }
         if ( strncmp(root("object")("c").toString(), "d", 1) != 0 ) {
@@ -69,13 +69,27 @@ public:
 
 
         // iteration
-        gason::JsonValue childObject = root.child("object");
-        gason::JsonIterator it;
-        for ( it = gason::begin(childObject);    it.isValid();    it++) {
-            printf("%s = %s\n",
-                   it->key, it->value.toString()
-                   );
+        gason::JsonIterator it = gason::begin( root.child("object") );
+        while ( it.isValid() ) {
+            printf("%s = %s\n", it->key, it->value.toString());
+
+            it++;
         }
+
+
+        // invalid object / index
+        size_t index = 7;
+        gason::JsonValue item = root("array")[index];
+        if ( !item ) {
+            printf("array[%u] does not exist.\n", index);
+
+        } else if ( !item.isNumber() ) {
+            printf("array[%u] is not a number.\n", index);
+
+        } else {
+            printf("array[%u] = %d\n", index, item.toInt());
+        }
+
 
         return true;
     }
