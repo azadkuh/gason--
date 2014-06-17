@@ -57,10 +57,6 @@ struct JsonValue {
         assert(x <= JSON_VALUE_PAYLOAD_MASK);
         ival = JSON_VALUE_NAN_MASK | ((uint64_t)tag << JSON_VALUE_TAG_SHIFT) | x;
     }
-    uint64_t    getPayload() const {
-        assert(!isDouble());
-        return ival & JSON_VALUE_PAYLOAD_MASK;
-    }
 
     bool        isDouble() const {
         return (int64_t)ival <= (int64_t)JSON_VALUE_NAN_MASK;
@@ -69,6 +65,10 @@ struct JsonValue {
         return isDouble() ? JSON_TAG_NUMBER : JsonTag((ival >> JSON_VALUE_TAG_SHIFT) & JSON_VALUE_TAG_MASK);
     }
 
+    // all toXXX() methods do assert().
+    int         toInt() const {
+        return (int) toNumber();
+    }
     double      toNumber() const {
         assert(getTag() == JSON_TAG_NUMBER);
         return fval;
@@ -113,6 +113,11 @@ struct JsonValue {
     JsonValue   at(size_t i) const;
 
 protected:
+    uint64_t    getPayload() const {
+        assert(!isDouble());
+        return ival & JSON_VALUE_PAYLOAD_MASK;
+    }
+
     static const uint64_t JSON_VALUE_PAYLOAD_MASK = 0x00007FFFFFFFFFFFULL;
     static const uint64_t JSON_VALUE_NAN_MASK     = 0x7FF8000000000000ULL;
     static const uint64_t JSON_VALUE_NULL         = 0x7FFF800000000000ULL;
@@ -132,27 +137,31 @@ struct JsonIterator {
     explicit JsonIterator(JsonNode* n = nullptr) : p(n) {
     }
 
-    void        operator++() {
+    void       operator++() {
         p = p->next;
     }
-    void        operator++(int) {
+    void       operator++(int) {
         p = p->next;
     }
+
     bool       isValid()const {
         return p != nullptr;
     }
+    bool       hasNext()const {
+        return p->next != nullptr;
+    }
 
-    bool        operator==(const char* key) const {
+    bool       operator==(const char* key) const {
         return strncmp(p->key, key, strlen(key)) == 0;
     }
-    bool        operator!=(const JsonIterator &x) const {
+    bool       operator!=(const JsonIterator &x) const {
         return p != x.p;
     }
 
-    JsonNode*   operator*() const {
+    JsonNode*  operator*() const {
         return p;
     }
-    JsonNode*   operator->() const {
+    JsonNode*  operator->() const {
         return p;
     }
 };
