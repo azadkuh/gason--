@@ -28,9 +28,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 class JSonGason
 {
+    gason::JsonAllocator    iallocator;
 
 public:
-    static bool     doTest1() {
+    bool     doTest_sample1() {
+        puts("\n /---- sample1.json ---\\");
         FILE* fp = fopen("../sample-jsons/sample1.json", "r+t");
         if ( fp == 0 ) {
             puts("sample1.json not found!");
@@ -45,9 +47,8 @@ public:
 
 
         // parsing
-        gason::JsonAllocator    allocator;
         gason::JsonValue        root;
-        gason::JsonParseStatus  status = gason::jsonParse(buffer, root, allocator);
+        gason::JsonParseStatus  status = gason::jsonParse(buffer, root, iallocator);
         // buffer will be over-written by jsonParse
         if ( status != gason::JSON_PARSE_OK ) {
             puts("parsing failed!");
@@ -94,7 +95,8 @@ public:
         return true;
     }
 
-    static bool     doTest2() {
+    bool     doTest_fathers() {
+        puts("\n /---- fathers.json ---\\");
         FILE* fp = fopen("../sample-jsons/fathers.json", "r+t");
         if ( fp == 0 ) {
             puts("fathers.json not found!");
@@ -110,45 +112,42 @@ public:
 
         // parsing
         gason::JsonValue        root;
-        gason::JsonAllocator    allocator;
-        gason::JsonParseStatus  status = gason::jsonParse(buffer, root, allocator);
+        gason::JsonParseStatus  status = gason::jsonParse(buffer, root, iallocator);
         // buffer will be over-written by jsonParse
         if ( status != gason::JSON_PARSE_OK ) {
             puts("parsing failed!");
             return false;
         }
 
-        bool ok = false;
+        size_t childrenStat[10] = {0};
+
         gason::JsonIterator it = gason::begin(root("fathers"));
         while ( it.isValid() ) {
             gason::JsonValue father = it->value;
 
-            size_t sonsCount = 0;
+            size_t childrenCount = 0;
             for ( gason::JsonIterator chit = gason::begin(father("sons")); chit.isValid(); chit++ ) {
-                sonsCount++;
+                childrenCount++;
             }
-            size_t daughtersCount = 0;
             for ( gason::JsonIterator chit = gason::begin(father("daughters")); chit.isValid(); chit++ ) {
-                daughtersCount++;
+                childrenCount++;
             }
 
-            if ( (sonsCount + daughtersCount) >= 4 ) {
-                int id           = father("id").toInt(&ok);
-                const char* name = father("name").toString(&ok);
-
-                printf("%s (#%d) has %lu children!!\n", name, id,
-                       sonsCount + daughtersCount);
-
-            }
+            childrenStat[childrenCount] = childrenStat[childrenCount] + 1;
 
             it++;
+        }
+
+        for ( size_t i = 0;    i < 10;    i++ ) {
+            printf("%02lu father(s) has/have %lu child/children.\n", childrenStat[i], i);
         }
 
 
         return true;
     }
 
-    static bool     doTest3() {
+    bool     doTest_servlet() {
+        puts("\n /---- servlet.json ---\\");
         FILE* fp = fopen("../sample-jsons/servlet.json", "r+t");
         if ( fp == 0 ) {
             puts("servlet.json not found!");
@@ -164,8 +163,7 @@ public:
 
         // parsing
         gason::JsonValue        root;
-        gason::JsonAllocator    allocator;
-        gason::JsonParseStatus  status = gason::jsonParse(buffer, root, allocator);
+        gason::JsonParseStatus  status = gason::jsonParse(buffer, root, iallocator);
         // buffer will be over-written by jsonParse
         if ( status != gason::JSON_PARSE_OK ) {
             puts("parsing failed!");
@@ -180,7 +178,7 @@ public:
                                      .child("maxUrlLength");
 
         if ( deepChild  &&  deepChild.isNumber() ) {
-            int maxUrlLength = deepChild.toInt();
+            int maxUrlLength = deepChild.toInt(&ok);
             if ( maxUrlLength != 500 ) {
                 printf("maxUrlLength = %d, should be 500!", maxUrlLength);
             } else {
@@ -193,14 +191,57 @@ public:
 
         return true;
     }
+
+    bool     doTest_makefile() {
+        puts("\n /---- makefile.json ---\\");
+        FILE* fp = fopen("../sample-jsons/makefile.json", "r+t");
+        if ( fp == 0 ) {
+            puts("makefile.json not found!");
+            return false;
+        }
+
+        // hold json data through the test
+        static const size_t KBufferLength = 32*1024;
+        char buffer[KBufferLength+1] = {0};
+        fread(buffer, KBufferLength, 1, fp);
+        fclose(fp);
+
+
+        // parsing
+        gason::JsonValue        root;
+        gason::JsonParseStatus  status = gason::jsonParse(buffer, root, iallocator);
+        // buffer will be over-written by jsonParse
+        if ( status != gason::JSON_PARSE_OK ) {
+            puts("parsing failed!");
+            return false;
+        }
+
+        gason::JsonValue  cmd  = root("command");
+        gason::JsonValue  mak  = root("data");
+
+        printf("command is: %s\n",
+               (cmd.isString()) ? cmd.toString() : "!!! not found" );
+        printf("data is: %lu bytes.\n",
+               (mak.isString()) ? strlen(mak.toString()) : 0 );
+
+
+        return true;
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 int main(int , char **)
 {
-    JSonGason::doTest1();
-    JSonGason::doTest2();
-    JSonGason::doTest3();
+    JSonGason   tester;
+
+    for ( size_t i = 0;    i < 2;    i++ ) {
+        printf("\n\n---------------------> test iteration %03lu\n", i+1);
+
+        tester.doTest_makefile();
+        tester.doTest_sample1();
+        tester.doTest_servlet();
+        tester.doTest_fathers();
+    }
 
     return 0;
 }

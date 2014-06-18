@@ -7,6 +7,8 @@ TARGET = parser1
 TEMPLATE = app
 include(../commondir.pri)
 
+DEFINES  += GASON_DEBUG_ALLOCATOR
+
 
 SOURCES += main.cpp \
     ../../src/gason.cpp
