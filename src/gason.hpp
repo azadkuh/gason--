@@ -228,9 +228,6 @@ enum JsonParseStatus {
  * just keep allocator instance as long as you want to keep JsonValues.
  */
 class JsonAllocator {
-    struct  Zone;
-    Zone*   head;
-
 public:
     JsonAllocator() : head(nullptr) {
     }
@@ -238,9 +235,21 @@ public:
         deallocate();
     }
 
-    void*   allocate(size_t size);
+    /** frees the allocated memory.
+     * you do not need to call this function. If for some reason you have to
+     *  release the memory manually, beware that after deallocate(),
+     *  all the parsed JsonValues are invalid.
+     */
     void    deallocate();
+
+protected:
+    struct  Zone;
+    Zone*   head;
+
+    void*   allocate(size_t size);
     void    reset();
+
+    friend JsonParseStatus jsonParse(char*, char**, JsonValue*, JsonAllocator&);
 };
 
 JsonParseStatus
@@ -261,6 +270,7 @@ jsonParse(char *str, char **endptr, JsonValue *value, JsonAllocator &allocator);
  * @param jsonString the JSon string. this buffer will be modified by this function.
  * @param root root object of JSon string. could be an object or array.
  * @param allocator an instance to memory manager.
+ *  this function calls allocator.reset() before parsing.
  * @return returns JSON_PARSE_OK or a proper error code.
  */
 inline JsonParseStatus
