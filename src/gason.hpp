@@ -9,7 +9,7 @@
  * based on this commit: 9e292d4
  *
  * @author amir zamani
- * @version 2.0.0
+ * @version 2.1.0
  * @date 2014-05-16
  *
  */
@@ -222,6 +222,11 @@ enum JsonParseStatus {
     JSON_PARSE_BREAKING_BAD
 };
 
+/** Automatic memory manager for parsed JsonValue.
+ * @sa jsonPars().
+ * used internally by jsonParse(). you do not need to manually handle this object.
+ * just keep allocator instance as long as you want to keep JsonValues.
+ */
 class JsonAllocator {
     struct  Zone;
     Zone*   head;
@@ -229,18 +234,39 @@ class JsonAllocator {
 public:
     JsonAllocator() : head(nullptr) {
     }
-    ~JsonAllocator();
+    ~JsonAllocator() {
+        deallocate();
+    }
+
     void*   allocate(size_t size);
     void    deallocate();
+    void    reset();
 };
 
 JsonParseStatus
 jsonParse(char *str, char **endptr, JsonValue *value, JsonAllocator &allocator);
 
+/** parses a JSon string and return root object or array.
+ * JsonValues are the index tree for actual data on jsonString. allocator object holds
+ *  and manage these indices.
+ *
+ * to keep the JsonValue valid, you have to keep both jsonString (data)
+ *  and allocator (instances) alive.
+ *
+ * to avoid calling alloc/free many times (a serious problem on embedded devices)
+ *  the allocator is re-usable and you can hold and re-use instance for parsing
+ *  as many as jsonStrings you want. JsonAllocator automatically expands
+ *  if more memory is required and frees all memories automatically.
+ *
+ * @param jsonString the JSon string. this buffer will be modified by this function.
+ * @param root root object of JSon string. could be an object or array.
+ * @param allocator an instance to memory manager.
+ * @return returns JSON_PARSE_OK or a proper error code.
+ */
 inline JsonParseStatus
-jsonParse(char* str, JsonValue& value, JsonAllocator& allocator) {
+jsonParse(char* jsonString, JsonValue& root, JsonAllocator& allocator) {
     char *endptr = 0;
-    return jsonParse(str, &endptr, &value, allocator);
+    return jsonParse(jsonString, &endptr, &root, allocator);
 }
 ///////////////////////////////////////////////////////////////////////////////
 } // namespace gason

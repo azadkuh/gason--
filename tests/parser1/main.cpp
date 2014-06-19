@@ -234,13 +234,13 @@ int main(int , char **)
 {
     JSonGason   tester;
 
-    for ( size_t i = 0;    i < 2;    i++ ) {
+    for ( size_t i = 0;    i < 100;    i++ ) {
         printf("\n\n---------------------> test iteration %03lu\n", i+1);
 
-        tester.doTest_makefile();
-        tester.doTest_sample1();
         tester.doTest_servlet();
         tester.doTest_fathers();
+        tester.doTest_sample1();
+        tester.doTest_makefile();
     }
 
     return 0;

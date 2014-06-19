@@ -1,6 +1,7 @@
 #include "gason.hpp"
 #include <ctype.h>
 #include <stdlib.h>
+#include <stdio.h>
 ///////////////////////////////////////////////////////////////////////////////
 namespace gason {
 ///////////////////////////////////////////////////////////////////////////////
@@ -8,46 +9,140 @@ namespace gason {
 #define JSON_STACK_SIZE     32
 
 struct JsonAllocator::Zone {
+protected:
+    Zone*   prev;
     Zone*   next;
     size_t  used;
-};
 
-JsonAllocator::~JsonAllocator() {
-    deallocate();
-}
+    friend class JsonAllocator;
+
+public:
+    static Zone*    create(size_t allocSize) {
+        assert(allocSize <= JSON_ZONE_SIZE);
+        Zone* z     = (Zone*) ::malloc(JSON_ZONE_SIZE);
+        assert( z != 0 );
+        z->used     = allocSize;
+        z->next     = nullptr;
+        z->prev     = nullptr;
+
+        return z;
+    }
+
+protected:
+    static Zone*    begin(Zone* head) {
+        Zone* iter = head;
+        while ( iter ) {
+            Zone* prev = iter->prev;
+            if ( prev == nullptr )
+                break;
+            iter       = prev;
+        }
+
+        return iter;
+    }
+
+    static Zone*    end(Zone* head) {
+        Zone* iter = head;
+        while ( iter ) {
+            Zone* next = iter->next;
+            if ( next == nullptr )
+                break;
+            iter       = next;
+        }
+
+        return iter;
+    }
+
+    static size_t   totalAllocatedSpace(Zone* head) {
+        size_t total = 0;
+        Zone* iter   = begin(head);
+
+        while ( iter ) {
+            total     += JSON_ZONE_SIZE;
+            Zone* next = iter->next;
+            iter       = next;
+        }
+
+        return total;
+    }
+};
 
 void*
 JsonAllocator::allocate(size_t size) {
-    size = (size + 7) & ~7;
+    size = (size + 7) & ~7; // ensure the size = 8n and 8n >= size
 
-    if (head) {
-        if (head->used + size <= JSON_ZONE_SIZE) {
-            char *p = (char *)head + head->used;
+    if ( head ) { // head is a valid pre-allocated
+        assert( head->used <= JSON_ZONE_SIZE );
+
+        if ( head->used + size <= JSON_ZONE_SIZE ) { // head has enough empty spaces
+            char *p     = (char*)head + head->used;
             head->used += size;
             return p;
         }
+
+        else if ( head->next ) { // head if full, go for next valid Zone
+            Zone* zone  = head->next;
+            assert(zone->used == sizeof(Zone));
+            assert(zone->prev == head);
+            zone->used += size;
+            head        = zone;
+            return (char*)zone + sizeof(Zone);
+        }
     }
 
+
     size_t allocSize = sizeof(Zone) + size;
-    Zone *zone = (Zone *)malloc(allocSize <= JSON_ZONE_SIZE ? JSON_ZONE_SIZE : allocSize);
-    zone->used = allocSize;
-    if (allocSize <= JSON_ZONE_SIZE || head == nullptr) {
-        zone->next = head;
-        head = zone;
-    } else {
-        zone->next = head->next;
+    Zone* zone       = Zone::create(allocSize);
+
+    zone->prev = head;
+#ifdef GASON_DEBUG_ALLOCATOR
+    fprintf(stderr, "allocating %p (prev: %p , next: %p)\n", zone, zone->prev, zone->next);
+#endif
+    if ( head )
         head->next = zone;
-    }
-    return (char *)zone + sizeof(Zone);
+    head = zone;
+
+    return (char*)zone + sizeof(Zone);
 }
 
 void
 JsonAllocator::deallocate() {
-    while (head) {
-        Zone *next = head->next;
-        free(head);
-        head = next;
+#ifdef GASON_DEBUG_ALLOCATOR
+    size_t totalUsedSpace = Zone::totalAllocatedSpace(head);
+    fprintf(stderr, "\n%s(%d): %lu bytes are going to be deallocated.\n",
+           __FILE__, __LINE__,
+           totalUsedSpace);
+#endif
+
+    // goto last allocated item
+    Zone* iter = Zone::end(head);
+
+    while ( iter ) {
+#ifdef GASON_DEBUG_ALLOCATOR
+        fprintf(stderr, "freeing    %p (prev: %p , next: %p)\n", iter, iter->prev, iter->next);
+#endif
+        Zone *prev = iter->prev;
+        free(iter);
+        iter = prev;
     }
+
+    head  = nullptr;
+}
+
+void
+JsonAllocator::reset() {
+    Zone* iter = Zone::end(head);
+
+    while ( iter ) {
+        memset((char*)iter + sizeof(Zone), 0, JSON_ZONE_SIZE - sizeof(Zone));
+        iter->used  = sizeof(Zone);
+        Zone* prev  = iter->prev;
+        if ( prev == nullptr ) // break if head is the first allocated Zone.
+            break;
+        iter        = prev;
+    }
+
+    head = iter;
 }
 
 static inline bool
@@ -134,6 +229,9 @@ jsonParse(char *s, char **endptr, JsonValue *value, JsonAllocator &allocator) {
     JsonTag tags[JSON_STACK_SIZE];
     char *keys[JSON_STACK_SIZE];
     int pos = -1;
+
+    // reset allocator Zones.
+    allocator.reset();
 
     bool separator = true;
 
