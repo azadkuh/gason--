@@ -31,12 +31,15 @@ gason(gason++) is efficient and fast and it does not consume any extra memory fo
 
 * `c++11` is optional and `gason++` is also compilable on older toolchains. `gason` requires `c++11`.
 
+* `JsonAllocator` is **reusable** and **auto-expandable** in `gason++` and the implementation does not free/alloc memory with every `jsonParse()` (this is not the case in `gason`). for more information see doxygen comments of `JsonAllocator` or [sample:parser](./tests/parser1/main.cpp) 
+
 
 ## Installation
 [TOC](#table-of-contents)
 
 Download latest version and just add [gason.hpp](./src/gason.hpp) / [gason.cpp](./src/gason.cpp) and [jsonbuilder.hpp](./src/jsonbuilder.hpp) from [src](./src) folder into your project tree.
-*Other `*.pro` and source files are just for testing purpose.*
+
+Other `*.pro` and source files are just for testing purpose.
 
 
 
