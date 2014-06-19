@@ -25,7 +25,7 @@ please read gason documents to see the full list of features and other notes.
 gason(gason++) is efficient and fast and it does not consume any extra memory for parsed values (objects, arrays, ...)
 
 * gason(gason++) is a **destructive** parser:
-> your **source buffer** will be **modified**! and this buffer is the only place where the values do exist.
+> your *source buffer* will be **modified**! and this buffer is the only place where the values do exist.
 
 * there is a simple and efficient `JSonBuilder` which is not present on original `gason`.
 
@@ -129,13 +129,13 @@ if ( objc    &&    objc.isString() ) {
 
 if conversion fails, the conversion methods:
 
-* fire `assert()` if `ok` is not specified.
+* fire `assert()` if `ok` is not specified (default).
 * return a `0`,`nullptr` or `false` value and `*ok` will be set to `false`.
 
 ```cpp
 bool ok = false;
 
-int  invalidValue1 = str.toInt();   // will assert()
+int  invalidValue1 = str.toInt();   // will assert() and program aborts.
 
 const char* invalidValue2 = arr2.toString(&ok); // won't assert()
 if ( !ok ) {
