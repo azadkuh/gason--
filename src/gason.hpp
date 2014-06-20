@@ -160,6 +160,7 @@ protected:
     static const uint64_t JSON_VALUE_TAG_SHIFT    = 47;
 };
 ///////////////////////////////////////////////////////////////////////////////
+/** a JsonNode is a JsonValue who is an array or object. */
 struct JsonNode {
     JsonValue   value;
     JsonNode*   next;
