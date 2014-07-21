@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="gason++ : an efficient Json parser and builder in plain C++" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>gason++</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/azadkuh/gason--">View on GitHub</a>
+
+          <h1 id="project_title">gason++</h1>
+          <h2 id="project_tagline">an efficient Json parser and builder in plain C++</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/azadkuh/gason--/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/azadkuh/gason--/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="gason" class="anchor" href="#gason"><span class="octicon octicon-link"></span></a>gason++</h1>
+
+<p>gason++ is a light tweak for <a href="https://github.com/vivkin/gason">gason</a> parser to make its usage even simpler for end-users.
+There is also a simple JSon builder tool.</p>
+
+<p>gason is an <strong>efficient</strong> and fantastic JSon parser in plain C++ with minimum dependency by <a href="https://github.com/vivkin">vivkin</a>.</p>
+
+<p>please read gason documents to see the full list of features and other notes.</p>
+
+<h2>
+<a name="table-of-contents" class="anchor" href="#table-of-contents"><span class="octicon octicon-link"></span></a>Table of Contents</h2>
+
+<ul>
+<li><a href="#notes">Notes</a></li>
+<li><a href="#installation">Installation</a></li>
+<li>
+<a href="#usage">Usage</a>
+
+<ul>
+<li><a href="#parsing">Parsing</a></li>
+<li><a href="#child-elements">Child elements</a></li>
+<li><a href="#type-checking">Type checking</a></li>
+<li><a href="#conversion">Conversion</a></li>
+<li><a href="#iteration">Iteration</a></li>
+<li><a href="#building">Building</a></li>
+</ul>
+</li>
+<li><a href="#license">License</a></li>
+</ul><h2>
+<a name="notes" class="anchor" href="#notes"><span class="octicon octicon-link"></span></a>Notes</h2>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<p>gason(gason++) is efficient and fast and it does not consume any extra memory for parsed values (objects, arrays, ...)</p>
+
+<ul>
+<li>
+<p>gason(gason++) is a <strong>destructive</strong> parser:</p>
+
+<blockquote>
+<p>your <em>source buffer</em> will be <strong>modified</strong>! and this buffer is the only place where the values do exist.</p>
+</blockquote>
+</li>
+<li><p>there is a simple and efficient <code>JSonBuilder</code> which is not present on original <code>gason</code>.</p></li>
+<li><p><code>c++11</code> is optional and <code>gason++</code> is also compilable on older toolchains. <code>gason</code> requires <code>c++11</code>.</p></li>
+<li><p><code>JsonAllocator</code> is <strong>reusable</strong> and <strong>auto-expandable</strong> in <code>gason++</code> and the implementation does not free/alloc memory with every <code>jsonParse()</code> (this is not the case in <code>gason</code>). for more information see doxygen comments of <code>JsonAllocator</code> or <a href="./tests/parser1/main.cpp">sample:parser</a> </p></li>
+</ul><h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<p>Download latest version and just add <a href="./src/gason.hpp">gason.hpp</a> / <a href="./src/gason.cpp">gason.cpp</a> and <a href="./src/jsonbuilder.hpp">jsonbuilder.hpp</a> from <a href="./src">src</a> folder into your project tree.</p>
+
+<p>Other <code>*.pro</code> and source files are just for testing purpose.</p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<p>suppose this json:</p>
+
+<div class="highlight highlight-json"><pre><span class="p">{</span>
+  <span class="nt">"an_array"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="mi">10</span><span class="p">,</span>
+    <span class="mi">11</span><span class="p">,</span>
+    <span class="mi">12</span>
+  <span class="p">],</span>
+  <span class="nt">"a_boolean"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">"a_null"</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+  <span class="nt">"a_number"</span><span class="p">:</span> <span class="mi">123</span><span class="p">,</span>
+  <span class="nt">"an_object"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"a"</span><span class="p">:</span> <span class="s2">"b"</span><span class="p">,</span>
+    <span class="nt">"c"</span><span class="p">:</span> <span class="s2">"d"</span><span class="p">,</span>
+    <span class="nt">"e"</span><span class="p">:</span> <span class="s2">"f"</span>
+  <span class="p">},</span>
+  <span class="nt">"a_message"</span><span class="p">:</span> <span class="s2">"Hello World"</span>
+<span class="p">}</span>
+</pre></div>
+
+<h3>
+<a name="parsing" class="anchor" href="#parsing"><span class="octicon octicon-link"></span></a>Parsing</h3>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<p>to parse it simply do:</p>
+
+<div class="highlight highlight-cpp"><pre><span class="c1">// this buffer holds the json content.</span>
+<span class="c1">// char *jsonString;</span>
+
+<span class="n">gason</span><span class="o">::</span><span class="n">JsonAllocator</span>    <span class="n">allocator</span><span class="p">;</span>
+<span class="n">gason</span><span class="o">::</span><span class="n">JsonValue</span>        <span class="n">root</span><span class="p">;</span>
+<span class="n">gason</span><span class="o">::</span><span class="n">JsonParseStatus</span>  <span class="n">status</span> <span class="o">=</span> <span class="n">gason</span><span class="o">::</span><span class="n">jsonParse</span><span class="p">(</span><span class="n">jsonString</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">allocator</span><span class="p">);</span>
+
+<span class="k">if</span> <span class="p">(</span> <span class="n">status</span> <span class="o">!=</span> <span class="n">gason</span><span class="o">::</span><span class="n">JSON_PARSE_OK</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"parsing failed!"</span><span class="p">);</span>
+    <span class="c1">// for more info check the status.</span>
+    <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// hint: jsonString will be over-written by jsonParse()</span>
+<span class="c1">//        and you have to keep this buffer and allocator alive</span>
+<span class="c1">//        as long as the parsed JSon values are required.</span>
+</pre></div>
+
+<p>see <a href="./tests/parser1/main.cpp">sample:parser</a> for more examples.</p>
+
+<h3>
+<a name="child-elements" class="anchor" href="#child-elements"><span class="octicon octicon-link"></span></a>Child elements</h3>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<p>gason++ introduces an easy API to retrieve the child elements:</p>
+
+<div class="highlight highlight-cpp"><pre><span class="n">gason</span><span class="o">::</span><span class="n">JsonValue</span> <span class="n">str</span>  <span class="o">=</span> <span class="n">root</span><span class="p">.</span><span class="n">child</span><span class="p">(</span><span class="s">"a_message"</span><span class="p">);</span>        <span class="c1">// = Hello World</span>
+<span class="n">gason</span><span class="o">::</span><span class="n">JsonValue</span> <span class="n">arr0</span> <span class="o">=</span> <span class="n">root</span><span class="p">.</span><span class="n">child</span><span class="p">(</span><span class="s">"an_array"</span><span class="p">).</span><span class="n">at</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>   <span class="c1">// = 10</span>
+<span class="c1">// short form</span>
+<span class="n">gason</span><span class="o">::</span><span class="n">JsonValue</span> <span class="n">arr2</span> <span class="o">=</span> <span class="n">root</span><span class="p">(</span><span class="s">"an_array"</span><span class="p">)[</span><span class="mi">2</span><span class="p">];</span>            <span class="c1">// = 12</span>
+<span class="n">gason</span><span class="o">::</span><span class="n">JsonValue</span> <span class="n">objc</span> <span class="o">=</span> <span class="n">root</span><span class="p">(</span><span class="s">"an_object"</span><span class="p">)(</span><span class="s">"c"</span><span class="p">);</span>         <span class="c1">// = d</span>
+</pre></div>
+
+<blockquote>
+<p>All <strong>values</strong> will become <strong>invalid</strong> when <strong>allocator</strong> be <strong>destroyed</strong>.</p>
+</blockquote>
+
+<h3>
+<a name="type-checking" class="anchor" href="#type-checking"><span class="octicon octicon-link"></span></a>Type checking</h3>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<p>to check validity or the type of values:</p>
+
+<div class="highlight highlight-cpp"><pre><span class="k">if</span> <span class="p">(</span> <span class="o">!</span><span class="n">str</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"str is not a valid JsonValue!"</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">arr2</span>    <span class="o">&amp;&amp;</span>    <span class="n">arr2</span><span class="p">.</span><span class="n">isNumber</span><span class="p">()</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"a valid number has been found on an_array[2]."</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">objc</span>    <span class="o">&amp;&amp;</span>    <span class="n">objc</span><span class="p">.</span><span class="n">isString</span><span class="p">()</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"an string has been found in root-&gt;an_object-&gt;c."</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+<h3>
+<a name="conversion" class="anchor" href="#conversion"><span class="octicon octicon-link"></span></a>Conversion</h3>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<p><code>JsonValue</code> has some <code>toXXX(bool *ok = nullptr)</code> to convert a value into an int, string, ...</p>
+
+<p>if conversion fails, the conversion methods:</p>
+
+<ul>
+<li>fire <code>assert()</code> if <code>ok</code> is not specified (default).</li>
+<li>return a <code>0</code>,<code>nullptr</code> or <code>false</code> value and <code>*ok</code> will be set to <code>false</code>.</li>
+</ul><div class="highlight highlight-cpp"><pre><span class="kt">bool</span> <span class="n">ok</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+
+<span class="kt">int</span>  <span class="n">invalidValue1</span> <span class="o">=</span> <span class="n">str</span><span class="p">.</span><span class="n">toInt</span><span class="p">();</span>   <span class="c1">// will assert() and program aborts.</span>
+
+<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">invalidValue2</span> <span class="o">=</span> <span class="n">arr2</span><span class="p">.</span><span class="n">toString</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ok</span><span class="p">);</span> <span class="c1">// won't assert()</span>
+<span class="k">if</span> <span class="p">(</span> <span class="o">!</span><span class="n">ok</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"arr2 is an int not a string!"</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+<h3>
+<a name="iteration" class="anchor" href="#iteration"><span class="octicon octicon-link"></span></a>Iteration</h3>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<p>to iterate over children (elements) simply:</p>
+
+<div class="highlight highlight-cpp"><pre><span class="n">gason</span><span class="o">::</span><span class="n">JsonValue</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">root</span><span class="p">(</span><span class="s">"an_object"</span><span class="p">);</span>
+
+<span class="k">for</span> <span class="p">(</span> <span class="n">gason</span><span class="o">::</span><span class="n">JsonIterator</span> <span class="n">it</span> <span class="o">=</span>  <span class="n">gason</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span> <span class="n">gason</span><span class="o">::</span><span class="n">end</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span> <span class="n">it</span><span class="o">++</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%s = %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">,</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">toString</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="c1">// or</span>
+<span class="n">gason</span><span class="o">::</span><span class="n">JsonIterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">gason</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span> <span class="n">obj</span> <span class="p">);</span>
+<span class="k">while</span> <span class="p">(</span> <span class="n">it</span><span class="p">.</span><span class="n">isValid</span><span class="p">()</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%s = %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">,</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">toString</span><span class="p">());</span>
+
+    <span class="n">it</span><span class="o">++</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// both prints:</span>
+<span class="c1">// a = b</span>
+<span class="c1">// c = d</span>
+<span class="c1">// e = f</span>
+</pre></div>
+
+<h3>
+<a name="building" class="anchor" href="#building"><span class="octicon octicon-link"></span></a>Building</h3>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<p>to build the above json:</p>
+
+<div class="highlight highlight-cpp"><pre><span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">257</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+<span class="n">gason</span><span class="o">::</span><span class="n">JSonBuilder</span> <span class="n">doc</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="mi">256</span><span class="p">);</span>
+
+<span class="n">doc</span><span class="p">.</span><span class="n">startObject</span><span class="p">()</span>
+        <span class="p">.</span><span class="n">startArray</span><span class="p">(</span><span class="s">"an_array"</span><span class="p">)</span>
+            <span class="p">.</span><span class="n">addValue</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+            <span class="p">.</span><span class="n">addValue</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span>
+            <span class="p">.</span><span class="n">addValue</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">endArray</span><span class="p">()</span>
+
+        <span class="p">.</span><span class="n">addValue</span><span class="p">(</span><span class="s">"a_boolean"</span><span class="p">,</span> <span class="nb">true</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">addNull</span><span class="p">(</span><span class="s">"a_null"</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">addValue</span><span class="p">(</span><span class="s">"a_number"</span><span class="p">,</span> <span class="mi">123</span><span class="p">)</span>
+
+        <span class="p">.</span><span class="n">startObject</span><span class="p">(</span><span class="s">"an_object"</span><span class="p">)</span>
+            <span class="p">.</span><span class="n">addValue</span><span class="p">(</span><span class="s">"a"</span><span class="p">,</span> <span class="s">"b"</span><span class="p">)</span>
+            <span class="p">.</span><span class="n">addValue</span><span class="p">(</span><span class="s">"c"</span><span class="p">,</span> <span class="s">"d"</span><span class="p">)</span>
+            <span class="p">.</span><span class="n">addValue</span><span class="p">(</span><span class="s">"e"</span><span class="p">,</span> <span class="s">"f"</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">endObject</span><span class="p">()</span>
+
+        <span class="p">.</span><span class="n">addValue</span><span class="p">(</span><span class="s">"a_message"</span><span class="p">,</span> <span class="s">"Hello World"</span><span class="p">)</span>
+
+        <span class="p">.</span><span class="n">endObject</span><span class="p">();</span>
+
+<span class="c1">// now the buffer contains the proper json string.</span>
+
+<span class="k">if</span> <span class="p">(</span> <span class="o">!</span><span class="n">doc</span><span class="p">.</span><span class="n">isBufferAdequate</span><span class="p">()</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">"warning: the buffer is small and the output json is not valid."</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+<blockquote>
+<p>JSonBuilder just makes <strong>compact</strong> form of JSon strings suitable for storage or network communications. (the output is not indented.)</p>
+</blockquote>
+
+<p>see <a href="./tests/builder1/main.cpp">sample:builder</a> for more examples.</p>
+
+<h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p><a href="#table-of-contents">TOC</a></p>
+
+<p>Distributed under the MIT license. Copyright (c) 2014, Amir Zamani.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">gason++ maintained by <a href="https://github.com/azadkuh">azadkuh</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
