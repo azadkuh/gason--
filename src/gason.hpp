@@ -14,6 +14,11 @@
  * @date 2014-07-11
  * https://github.com/azadkuh/gason--
  *
+ * @author amir zamani
+ * @version 2.2.0
+ * @date 2014-11-24
+ * add latest features from gason/#d09cd7a
+ *
  */
 
 #ifndef __GASON_HPP__
@@ -26,18 +31,25 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace gason {
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef nullptr
-#   define nullptr      NULL
+#if __cplusplus <= 199711L
+#   define GASON_OLDTOOLCHAINS_SUPPORT
 #endif
+
+#if defined(GASON_OLDTOOLCHAINS_SUPPORT)
+#   ifndef nullptr
+#       define nullptr      NULL
+#   endif
+#endif // GASON_OLDTOOLCHAINS_SUPPORT
 ///////////////////////////////////////////////////////////////////////////////
 /** tag (type) of each JSon element. */
 enum JsonTag {
-    JSON_TAG_NUMBER = 0,        ///< double (floating point) value
-    JSON_TAG_STRING,            ///< string value
-    JSON_TAG_BOOL,              ///< boolean (true/false) value
-    JSON_TAG_ARRAY,             ///< an array value
-    JSON_TAG_OBJECT,            ///< an object value
-    JSON_TAG_NULL = 0xF         ///< null or invalid value
+    JSON_NUMBER = 0,        ///< double (floating point) value
+    JSON_STRING,            ///< string value
+    JSON_ARRAY,             ///< an array value
+    JSON_OBJECT,            ///< an object value
+    JSON_TRUE,              ///< true value
+    JSON_FALSE,             ///< false value
+    JSON_NULL = 0xF         ///< null or invalid value
 };
 ///////////////////////////////////////////////////////////////////////////////
 struct JsonNode;
@@ -49,40 +61,36 @@ struct JsonValue {
         double      fval;
     };
 
-    JsonValue() : ival(JSON_VALUE_NULL) {
-    }
     JsonValue(double x) : fval(x) {
     }
-    JsonValue(JsonTag tag, void *p) {
-        uint64_t x = (uint64_t)p;
-        assert(tag <= JSON_VALUE_TAG_MASK);
-        assert(x <= JSON_VALUE_PAYLOAD_MASK);
-        ival = JSON_VALUE_NAN_MASK | ((uint64_t)tag << JSON_VALUE_TAG_SHIFT) | x;
+    JsonValue(JsonTag tag = JSON_NULL, void *payload = nullptr) {
+        assert((uint64_t)payload <= JSON_VALUE_PAYLOAD_MASK);
+        ival = JSON_VALUE_NAN_MASK | ((uint64_t)tag << JSON_VALUE_TAG_SHIFT) | (uint64_t)payload;
     }
 
     bool        isNumber() const {
-        return getTag() == JSON_TAG_NUMBER;
+        return getTag() == JSON_NUMBER;
     }
     bool        isBoolean() const {
-        return getTag() == JSON_TAG_BOOL;
+        return getTag() == JSON_TRUE || getTag() == JSON_FALSE;
     }
     bool        isString() const {
-        return getTag() == JSON_TAG_STRING;
+        return getTag() == JSON_STRING;
     }
     bool        isNode() const {
-        return getTag() == JSON_TAG_ARRAY ||  getTag() == JSON_TAG_OBJECT;
+        return getTag() == JSON_ARRAY ||  getTag() == JSON_OBJECT;
     }
     bool        isArray() const {
-        return getTag() == JSON_TAG_ARRAY;
+        return getTag() == JSON_ARRAY;
     }
     bool        isObject() const {
-        return getTag() == JSON_TAG_OBJECT;
+        return getTag() == JSON_OBJECT;
     }
     bool        isDouble() const {
         return (int64_t)ival <= (int64_t)JSON_VALUE_NAN_MASK;
     }
     JsonTag     getTag() const {
-        return isDouble() ? JSON_TAG_NUMBER : JsonTag((ival >> JSON_VALUE_TAG_SHIFT) & JSON_VALUE_TAG_MASK);
+        return isDouble() ? JSON_NUMBER : JsonTag((ival >> JSON_VALUE_TAG_SHIFT) & JSON_VALUE_TAG_MASK);
     }
 
     int         toInt(bool* ok = nullptr) const {
@@ -98,7 +106,7 @@ struct JsonValue {
         if ( !checkType(isBoolean(), ok) )
             return false;
 
-        return (bool)getPayload();
+        return getPayload() == JSON_TRUE;
     }
     char*       toString(bool* ok = nullptr) const {
         if ( !checkType(isString(), ok) )
@@ -115,7 +123,7 @@ struct JsonValue {
 
     /** returns true if this object is not NULL. */
     operator bool()const {
-        return getTag() != JSON_TAG_NULL;
+        return getTag() != JSON_NULL;
     }
     /** returns true if this object has typeof tag value. */
     bool        operator==(JsonTag tag) const {
@@ -227,7 +235,7 @@ enum JsonParseStatus {
 };
 
 /** Automatic memory manager for parsed JsonValue.
- * @sa jsonPars().
+ * @sa jsonParse().
  * used internally by jsonParse(). you do not need to manually handle this object.
  * just keep allocator instance as long as you want to keep JsonValues.
  */
@@ -245,6 +253,23 @@ public:
      *  all the parsed JsonValues are invalid.
      */
     void    deallocate();
+
+#if defined(GASON_OLDTOOLCHAINS_SUPPORT)
+private:
+    JsonAllocator(const JsonAllocator &);
+    JsonAllocator &operator=(const JsonAllocator &);
+#else
+    JsonAllocator(const JsonAllocator &) = delete;
+    JsonAllocator &operator=(const JsonAllocator &) = delete;
+    JsonAllocator(JsonAllocator &&x) : head(x.head) {
+        x.head = nullptr;
+    }
+    JsonAllocator &operator=(JsonAllocator &&x) {
+        head = x.head;
+        x.head = nullptr;
+        return *this;
+    }
+#endif
 
 protected:
     struct  Zone;
@@ -279,7 +304,7 @@ jsonParse(char *str, char **endptr, JsonValue *value, JsonAllocator &allocator);
  */
 inline JsonParseStatus
 jsonParse(char* jsonString, JsonValue& root, JsonAllocator& allocator) {
-    char *endptr = 0;
+    char *endptr = nullptr;
     return jsonParse(jsonString, &endptr, &root, allocator);
 }
 ///////////////////////////////////////////////////////////////////////////////
