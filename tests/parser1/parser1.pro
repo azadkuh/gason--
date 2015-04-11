@@ -1,6 +1,6 @@
 QT       -= core
 QT       -= gui
-CONFIG   += console
+CONFIG   += console c++11
 unix:macx:CONFIG   -= app_bundle
 
 TARGET = parser1
