@@ -204,7 +204,7 @@ string2double(char *s, char **endptr) {
             base = 0.1;
         }
 
-        int exponent = 0;
+        unsigned int exponent = 0;
         while (isdigit(*s))
             exponent = (exponent * 10) + (*s++ - '0');
 
@@ -255,8 +255,10 @@ jsonParse(char *s, char **endptr, JsonValue *value, JsonAllocator &allocator) {
     *endptr = s;
 
     while (*s) {
-        while (isspace(*s))
+        while (isspace(*s)) {
             ++s;
+            if (!*s) break;
+        }
         *endptr = s++;
         switch (**endptr) {
         case '-':
