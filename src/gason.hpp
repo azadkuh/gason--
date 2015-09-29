@@ -64,7 +64,7 @@ struct JsonValue {
     JsonValue(double x) : fval(x) {
     }
     JsonValue(JsonTag tag = JSON_NULL, void *payload = nullptr) {
-        assert((uint64_t)payload <= JSON_VALUE_PAYLOAD_MASK);
+        assert((uintptr_t)payload <= JSON_VALUE_PAYLOAD_MASK);
         ival = JSON_VALUE_NAN_MASK | ((uint64_t)tag << JSON_VALUE_TAG_SHIFT) | (uintptr_t)payload;
     }
 
@@ -231,7 +231,8 @@ enum JsonParseStatus {
     JSON_PARSE_MISMATCH_BRACKET,
     JSON_PARSE_UNEXPECTED_CHARACTER,
     JSON_PARSE_UNQUOTED_KEY,
-    JSON_PARSE_BREAKING_BAD
+    JSON_PARSE_BREAKING_BAD,
+    JSON_PARSE_ALLOCATION_FAILURE
 };
 
 /** Automatic memory manager for parsed JsonValue.

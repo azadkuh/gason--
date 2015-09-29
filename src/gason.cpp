@@ -94,6 +94,8 @@ JsonAllocator::allocate(size_t size) {
 
     size_t allocSize = sizeof(Zone) + size;
     Zone* zone       = Zone::create(allocSize);
+    if ( zone == nullptr )
+        return nullptr;
 
     zone->prev = head;
 #ifdef GASON_DEBUG_ALLOCATOR
@@ -361,7 +363,7 @@ jsonParse(char *s, char **endptr, JsonValue *value, JsonAllocator &allocator) {
             s += 4;
             break;
         case 'n':
-            if (!(s[0] == 'a' && s[1] == 'l' && s[2] == 's' && s[3] == 'e' && isdelim(s[4])))
+            if (!(s[0] == 'u' && s[1] == 'l' && s[2] == 'l' && isdelim(s[3])))
                 return JSON_PARSE_BAD_IDENTIFIER;
             o = JsonValue(JSON_FALSE);
             s += 4;
@@ -429,11 +431,17 @@ jsonParse(char *s, char **endptr, JsonValue *value, JsonAllocator &allocator) {
                 keys[pos] = o.toString();
                 continue;
             }
-            tails[pos] = insertAfter(tails[pos], (JsonNode *)allocator.allocate(sizeof(JsonNode)));
+            JsonNode* node = (JsonNode*) allocator.allocate(sizeof(JsonNode));
+            if ( node == nullptr )
+                return JSON_PARSE_ALLOCATION_FAILURE;
+            tails[pos] = insertAfter(tails[pos], node);
             tails[pos]->key = keys[pos];
             keys[pos] = nullptr;
         } else {
-            tails[pos] = insertAfter(tails[pos], (JsonNode *)allocator.allocate(sizeof(JsonNode) - sizeof(char *)));
+            JsonNode* node = (JsonNode*) allocator.allocate(sizeof(JsonNode) - sizeof(char*));
+            if ( node == nullptr )
+                return JSON_PARSE_ALLOCATION_FAILURE;
+            tails[pos] = insertAfter(tails[pos], node);
         }
         tails[pos]->value = o;
     }

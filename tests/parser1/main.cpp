@@ -51,13 +51,13 @@ public:
         gason::JsonParseStatus  status = gason::jsonParse(buffer, root, iallocator);
         // buffer will be over-written by jsonParse
         if ( status != gason::JSON_PARSE_OK ) {
-            puts("parsing failed!");
+            fprintf(stdout, "parsing failed! %d", static_cast<int>(status));
             return false;
         }
 
         // finding / reading values
         bool ok = false;
-        if ( root.child("array").at(5).toInt(&ok) != 2 ) {
+        if ( root.child("array").at(1).toInt(&ok) != 2 ) {
             puts("reading array element failed!");
         }
         if ( !root("number").isNumber() ) {
